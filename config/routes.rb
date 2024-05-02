@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   post '/aftership', to: 'shipments#aftership'
   resources :users
   resources :shipments do
-    post 'aftership'
+    post 'aftership', on: :collection
   end
   # Defines the root path route ("/")
   # root "posts#index"
