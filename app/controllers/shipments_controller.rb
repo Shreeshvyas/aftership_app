@@ -1,5 +1,7 @@
 class ShipmentsController < ApplicationController
   before_action :initialize_aftership_client
+  before_action :verify_webhook_signature, only: [:aftership]
+
 
   def initialize_aftership_client
     AfterShip.api_key = 'asat_827052647db34cae829f6d8422a595f9'
@@ -37,6 +39,17 @@ class ShipmentsController < ApplicationController
       end
     else
       render json: { error: 'Empty request body' }, status: :bad_request
+    end
+  end
+
+  private
+
+  def verify_webhook_signature
+    provided_signature = request.headers['aftership-signature']
+    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request.body.read)
+    
+    unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
+      head :unauthorized
     end
   end
 end
