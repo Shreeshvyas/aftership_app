@@ -22,10 +22,9 @@ class ShipmentsController < ApplicationController
     if request_body.present?
       begin
         params = JSON.parse(request_body)
-        tracking_number = params["shipments"]["msg"]["tracking_number"]
-        status = params["shipments"]["msg"]["tag"] 
-        expected_delivery = params["shipments"]["msg"]["expected_delivery"]
-
+        tracking_number = params.dig("msg", "tracking_number")
+        status = params.dig("msg", "tag") 
+        expected_delivery = params.dig("msg", "expected_delivery")
         order = User.find_by(tracking_number: tracking_number)
         if order
           order.update!(aftership_status: status, expected_delivery_date: expected_delivery)
