@@ -2,7 +2,6 @@ class ShipmentsController < ApplicationController
   before_action :initialize_aftership_client
   before_action :verify_webhook_signature, only: [:aftership]
 
-
   def initialize_aftership_client
     AfterShip.api_key = 'asat_827052647db34cae829f6d8422a595f9'
   end
@@ -11,7 +10,7 @@ class ShipmentsController < ApplicationController
     tracking_number = params[:tracking_number]
     carrier_name = params[:carrier_name]
     tracking_info = AfterShip::V4::Tracking.get(tracking_number, carrier_name)
- end
+  end
 
   def aftership
     Rails.logger.info(request) if request&.present?
@@ -46,10 +45,16 @@ class ShipmentsController < ApplicationController
 
   def verify_webhook_signature
     provided_signature = request.headers['aftership-signature']
-    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request.body.read)
-    
-    unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
-      head :unauthorized
+    request_body = request.body.read
+
+    unless request_body.nil?
+      expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
+
+      unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
+        head :unauthorized
+      end
+    else
+      head :bad_request
     end
-  end
+  end  
 end
