@@ -46,9 +46,9 @@ class ShipmentsController < ApplicationController
     tracking = Tracking.find_or_create_by(date: DateTime.current, status: "Initiated", tracking_number: tracking_num)
     new_tracking_number = Tracking.last.tracking_number
     details = AfterShip::V4::Tracking.create(new_tracking_number.to_s, { emails: ["xyadscz@gmail.com"] })
-    user.update(tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"])
+    user.update(tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"])
   
-    render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"] }, status: :ok
+    render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"]}, status: :ok
   end
   
 
