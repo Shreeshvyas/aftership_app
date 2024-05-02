@@ -6,15 +6,12 @@ class ShipmentsController < ApplicationController
   end
 
   def track_shipment
-    debugger
     tracking_number = params[:tracking_number]
     carrier_name = params[:carrier_name]
     tracking_info = AfterShip::V4::Tracking.get(tracking_number, carrier_name)
-    debugger
-  end
+ end
 
   def aftership
-    debugger
     Rails.logger.info(request) if request&.present?
     Rails.logger.info(params) if params&.present?
 
@@ -23,14 +20,12 @@ class ShipmentsController < ApplicationController
 
     if request_body.present?
       begin
-        debugger
         params = JSON.parse(request_body)
         tracking_number = params["shipments"]["msg"]["tracking_number"]
         status = params["shipments"]["msg"]["tag"] 
         expected_delivery = params["shipments"]["msg"]["expected_delivery"]
 
         order = User.find_by(tracking_number: tracking_number)
-        debugger
         if order
           order.update!(aftership_status: status, expected_delivery_date: expected_delivery)
           render json: { status: 'success' }, status: :ok
