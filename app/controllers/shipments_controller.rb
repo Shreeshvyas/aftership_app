@@ -40,6 +40,18 @@ class ShipmentsController < ApplicationController
     end
   end
 
+  def create_trackings
+    user = User.find_by(id: params[:user_id])
+    tracking_num = SecureRandom.random_number(10_000_000..99_999_999)
+    tracking = Tracking.find_or_create_by(date: DateTime.current, status: "Initiated", tracking_number: tracking_num)
+    new_tracking_number = Tracking.last.tracking_number
+    details = AfterShip::V4::Tracking.create(new_tracking_number.to_s, { emails: ["xyadscz@gmail.com"] })
+    user.update(tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"])
+  
+    render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"] }, status: :ok
+  end
+  
+
   # private
 
   # def verify_webhook_signature

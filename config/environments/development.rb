@@ -8,7 +8,7 @@ Rails.application.configure do
   # since you don't have to restart the web server when you make code changes.
   config.enable_reloading = true
 
-  config.force_ssl = true
+  # config.force_ssl = true
 
 
   # Do not eager load code on boot.

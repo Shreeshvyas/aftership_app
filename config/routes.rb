@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   post '/track_shipment', to: 'shipments#track_shipment'
   post '/aftership', to: 'shipments#aftership'
+  post '/create_trackings', to: 'shipments#create_trackings'
+
   resources :users
   resources :shipments do
     post 'aftership', on: :collection
