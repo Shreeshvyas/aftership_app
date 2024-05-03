@@ -42,22 +42,14 @@ class ShipmentsController < ApplicationController
         params = JSON.parse(request_body)
         trac_num = params.dig("msg", "tracking_number")
         status = params.dig("msg", "tag")
-
-        begin
-          order = User.find_by(tracking_number: trac_num.to_i)
-        rescue => e
-          render json: { error: 'isko order ni mila bawa' }, status: :not_found
-        end
-        
-        begin 
-          if order
-            order.update!(aftership_status: status)
-            render json: order, status: :ok
-          else
-            render json: { error: 'Order not available' }, status: :not_found
-          end
-        rescue => e
-          render json: { error: 'ye update ni kr ra bawa yaha pe' }, status: :not_found
+        order = User.find_by(tracking_number: trac_num.to_i)
+        Rails.logger.info("order mila kya dekho to", order)
+        if order.present?
+          order.update!(aftership_status: status)
+          Rails.logger.info("updated")
+          render json: order, status: :ok
+        else
+          render json: { error: 'Order not available' }, status: :not_found
         end
       rescue JSON::ParserError => e
         render json: { error: 'Invalid JSON data in request body' }, status: :bad_request
