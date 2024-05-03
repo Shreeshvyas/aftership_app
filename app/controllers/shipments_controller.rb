@@ -42,15 +42,9 @@ class ShipmentsController < ApplicationController
         params = JSON.parse(request_body)
         trac_num = params.dig("msg", "tracking_number")
         status = params.dig("msg", "tag")
-        old_user = User.find_by(id: params[:user_id].to_i)
-        order = User.find_or_create_by(tag: "Initiated", tracking_number: trac_num)
-        Rails.logger.info "purana mila ky #{old_order}"
-        # order = User.find_by(tracking_number: trac_num.to_i)
-        Rails.logger.info "order mila kya dekho to"
-        Rails.logger.info "#{order}"
-        if order.present?
+        order = User.find_or_create_by(tracking_number: trac_num)
+        if order
           order.update!(aftership_status: status)
-          Rails.logger.info "updated"
           render json: order, status: :ok
         else
           render json: { error: 'Order not available' }, status: :not_found
