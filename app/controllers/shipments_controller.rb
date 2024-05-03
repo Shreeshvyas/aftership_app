@@ -43,11 +43,11 @@ class ShipmentsController < ApplicationController
         trac_num = params.dig("msg", "tracking_number")
         status = params.dig("msg", "tag")
         order = User.find_by(tracking_number: trac_num.to_i)
-        Rails.logger.info("order mila kya dekho to")
-        Rails.logger.info(order)
+        Rails.logger.info "order mila kya dekho to"
+        Rails.logger.info "#{order}"
         if order.present?
           order.update!(aftership_status: status)
-          Rails.logger.info("updated")
+          Rails.logger.info "updated"
           render json: order, status: :ok
         else
           render json: { error: 'Order not available' }, status: :not_found
