@@ -30,6 +30,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:tracking_number, :aftership_status, :expected_delivery_date)
+    params.require(:user).permit(:tracking_number, :aftership_status, :expected_delivery_date, :slug, :tag)
   end
 end

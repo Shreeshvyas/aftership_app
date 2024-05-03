@@ -1,9 +1,9 @@
 class ShipmentsController < ApplicationController
   before_action :initialize_aftership_client
-  # before_action :verify_webhook_signature, only: [:aftership]
+  before_action :verify_webhook_signature, only: [:aftership]
 
   def initialize_aftership_client
-    AfterShip.api_key = 'asat_827052647db34cae829f6d8422a595f9'
+    AfterShip.api_key = 'asak_cef9b553b85b424394df7fa200cc4c57'
   end
 
   def track_shipment
@@ -22,10 +22,11 @@ class ShipmentsController < ApplicationController
     if request_body.present?
       begin
         params = JSON.parse(request_body)
-        tracking_number = params.dig("msg", "tracking_number")
+        trac_num = params.dig("msg", "tracking_number")
         status = params.dig("msg", "tag") 
         expected_delivery = params.dig("msg", "expected_delivery")
-        order = User.find_by(tracking_number: tracking_number)
+        order = User.find_by(tracking_number: trac_num)
+      
         if order
           order.update!(aftership_status: status, expected_delivery_date: expected_delivery)
           render json: { status: 'success' }, status: :ok
@@ -51,21 +52,20 @@ class ShipmentsController < ApplicationController
     render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"]}, status: :ok
   end
   
+  private
 
-  # private
+  def verify_webhook_signature
+    provided_signature = request.headers['aftership-signature']
+    request_body = request.body.read
 
-  # def verify_webhook_signature
-  #   provided_signature = request.headers['aftership-signature']
-  #   request_body = request.body.read
+    unless request_body.nil?
+      expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
 
-  #   unless request_body.nil?
-  #     expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
-
-  #     unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
-  #       head :unauthorized
-  #     end
-  #   else
-  #     head :bad_request
-  #   end
-  # end  
+      unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
+        render json: { error: 'Unauthorized' }, status: :unauthorized
+      end
+    else
+      render json: { error: 'Bad request' }, status: :bad_request
+    end
+  end  
 end
