@@ -57,15 +57,17 @@ class ShipmentsController < ApplicationController
   def verify_webhook_signature
     provided_signature = request.headers['aftership-signature']
     request_body = request.body.read
-
-    unless request_body.nil?
-      expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
-
-      unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
-        render json: { error: 'Unauthorized' }, status: :unauthorized
-      end
-    else
-      render json: { error: 'Bad request' }, status: :bad_request
+  
+    if request_body.nil? || request_body.empty?
+      render json: { error: 'Empty request body' }, status: :bad_request
+      return
     end
-  end  
+  
+    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
+  
+    unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
+      render json: { error: 'Unauthorized' }, status: :unauthorized
+      return
+    end
+  end    
 end
