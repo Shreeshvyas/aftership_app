@@ -1,15 +1,33 @@
 class ShipmentsController < ApplicationController
+  require 'uri'
+  require 'net/http'
+
   before_action :initialize_aftership_client
   # before_action :verify_webhook_signature, only: [:aftership]
 
   def initialize_aftership_client
-    AfterShip.api_key = 'asak_cef9b553b85b424394df7fa200cc4c57'
+    AfterShip.api_key = 'asat_f6e9f63454854a6093d2f28a0007c5bd'
   end
 
   def track_shipment
     tracking_number = params[:tracking_number]
-    carrier_name = params[:carrier_name]
-    tracking_info = AfterShip::V4::Tracking.get(tracking_number, carrier_name)
+    slug = params[:carrier_name]
+    url = URI("https://api.aftership.com/tracking/2024-04/last_checkpoint/#{slug}/#{tracking_number}")
+    
+    http = Net::HTTP.new(url.host, url.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    
+    request = Net::HTTP::Get.new(url)
+    request["as-api-key"] ="asat_f6e9f63454854a6093d2f28a0007c5bd"
+    request["cache-control"] = 'no-cache'
+    
+    response = http.request(request)
+    if response
+      render json: response, status: :ok
+    else
+      render json: { error: 'No response' }, status: :not_found
+    end
   end
 
   def aftership
@@ -29,7 +47,7 @@ class ShipmentsController < ApplicationController
       
         if order
           order.update!(aftership_status: status, expected_delivery_date: expected_delivery)
-          render json: { status: 'success' }, status: :ok
+          render json: order, status: :ok
         else
           render json: { error: 'Order not available' }, status: :not_found
         end
@@ -42,11 +60,12 @@ class ShipmentsController < ApplicationController
   end
 
   def create_trackings
+    debugger
     user = User.find_by(id: params[:user_id])
     tracking_num = SecureRandom.random_number(10_000_000..99_999_999)
     tracking = Tracking.find_or_create_by(date: DateTime.current, status: "Initiated", tracking_number: tracking_num)
     new_tracking_number = Tracking.last.tracking_number
-    details = AfterShip::V4::Tracking.create(new_tracking_number.to_s, { emails: ["xyadscz@gmail.com"] })
+    details = AfterShip::V4::Tracking.create(new_tracking_number.to_s, { emails: ["jank@gmail.com"] })
     user.update(tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"])
   
     render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"]}, status: :ok

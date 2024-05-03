@@ -1,1 +1,1 @@
-AfterShip.api_key = 'asat_827052647db34cae829f6d8422a595f9'
+AfterShip.api_key = 'asat_f6e9f63454854a6093d2f28a0007c5bd'
