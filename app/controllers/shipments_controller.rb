@@ -43,7 +43,7 @@ class ShipmentsController < ApplicationController
         trac_num = params.dig("msg", "tracking_number")
         status = params.dig("msg", "tag")
         old_user = User.find_by(id: params[:user_id].to_i)
-        order = User.find_or_create_by(status: "Initiated", tracking_number: trac_num)
+        order = User.find_or_create_by(tag: "Initiated", tracking_number: trac_num)
         Rails.logger.info "purana mila ky #{old_order}"
         # order = User.find_by(tracking_number: trac_num.to_i)
         Rails.logger.info "order mila kya dekho to"
