@@ -60,7 +60,6 @@ class ShipmentsController < ApplicationController
   end
 
   def create_trackings
-    debugger
     user = User.find_by(id: params[:user_id])
     tracking_num = SecureRandom.random_number(10_000_000..99_999_999)
     tracking = Tracking.find_or_create_by(date: DateTime.current, status: "Initiated", tracking_number: tracking_num)
