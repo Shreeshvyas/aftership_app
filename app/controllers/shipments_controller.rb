@@ -41,12 +41,11 @@ class ShipmentsController < ApplicationController
       begin
         params = JSON.parse(request_body)
         trac_num = params.dig("msg", "tracking_number")
-        status = params.dig("msg", "tag") 
-        expected_delivery = params.dig("msg", "expected_delivery")
+        status = params.dig("msg", "tag")
         order = User.find_by(tracking_number: trac_num)
       
         if order
-          order.update!(aftership_status: status, expected_delivery_date: expected_delivery)
+          order.update!(aftership_status: status)
           render json: order, status: :ok
         else
           render json: { error: 'Order not available' }, status: :not_found
