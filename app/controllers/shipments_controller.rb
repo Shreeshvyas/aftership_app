@@ -1,6 +1,6 @@
 class ShipmentsController < ApplicationController
   before_action :initialize_aftership_client
-  before_action :verify_webhook_signature, only: [:aftership]
+  # before_action :verify_webhook_signature, only: [:aftership]
 
   def initialize_aftership_client
     AfterShip.api_key = 'asak_cef9b553b85b424394df7fa200cc4c57'
@@ -52,22 +52,21 @@ class ShipmentsController < ApplicationController
     render json: { status: 'success', tracking_number: new_tracking_number, slug: details["data"]["tracking"]["slug"], tag: details["data"]["tracking"]["tag"], expected_delivery_date: details["data"]["tracking"]["expected_delivery"]}, status: :ok
   end
   
-  private
 
-  def verify_webhook_signature
-    provided_signature = request.headers['aftership-signature']
-    request_body = request.body.read
-  
-    if request_body.nil? || request_body.empty?
-      render json: { error: 'Empty request body' }, status: :bad_request
-      return
-    end
-  
-    expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
-  
-    unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
-      render json: { error: 'Unauthorized' }, status: :unauthorized
-      return
-    end
-  end    
+  # private
+
+  # def verify_webhook_signature
+  #   provided_signature = request.headers['aftership-signature']
+  #   request_body = request.body.read
+
+  #   unless request_body.nil?
+  #     expected_signature = OpenSSL::HMAC.hexdigest('sha256', ENV['AFTERSHIP_WEBHOOK_SECRET_KEY'], request_body)
+
+  #     unless ActiveSupport::SecurityUtils.secure_compare(provided_signature, expected_signature)
+  #       head :unauthorized
+  #     end
+  #   else
+  #     head :bad_request
+  #   end
+  # end  
 end
